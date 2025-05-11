@@ -32,4 +32,17 @@ contract ReksadanaTest is Test {
         console.log("Total Asset: ", reksadana.totalAsset());
         console.log("Total Shares: ", IERC20(address(reksadana)).balanceOf(address(this)));
     }
+
+    function test_withdraw() public {
+        deal(usdc, address(this), 1000e6);
+        IERC20(usdc).approve(address(reksadana), 1000e6);
+        reksadana.deposit(1000e6);
+
+        uint256 userShares = IERC20(address(reksadana)).balanceOf(address(this));
+        reksadana.withdraw(userShares);
+
+        console.log("User USDC:", IERC20(usdc).balanceOf(address(this)));
+        console.log("User Shares:", IERC20(address(reksadana)).balanceOf(address(this)));
+        assertEq(IERC20(address(reksadana)).balanceOf(address(this)), 0);
+    }
 }

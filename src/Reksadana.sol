@@ -26,6 +26,7 @@ interface IAggregatorV3 {
 contract Reksadana is ERC20 {
     // Errors
     error ZeroAmount();
+    error NotEnoughShares();
 
     address uniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
@@ -110,5 +111,57 @@ contract Reksadana is ERC20 {
         });
         // Execute the swap
         ISwapRouter(uniswapRouter).exactInputSingle(params);
+    }
+
+
+    function withdraw(uint256 shares) public {
+        if (shares == 0) revert ZeroAmount();
+
+        uint256 totalShares = totalSupply();
+
+        if (shares > totalShares) revert NotEnoughShares();
+
+        uint256 PROPORTION_SCALED = 1e18;
+        uint256 proportion = (shares * PROPORTION_SCALED) / totalShares;
+
+        uint256 amountWbtc = (IERC20(wbtc).balanceOf(address(this)) * proportion) / PROPORTION_SCALED;
+        uint256 amountWeth = (IERC20(weth).balanceOf(address(this)) * proportion) / PROPORTION_SCALED;
+
+        _burn(msg.sender, shares);
+
+        uint256 amountUsdc = 0;
+
+        IERC20(wbtc).approve(uniswapRouter, amountWbtc);
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: wbtc,
+            tokenOut: usdc,
+            fee: 3000,
+            recipient: address(this),
+            deadline: block.timestamp,
+            amountIn: amountWbtc,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
+
+        // Execute the swap
+        ISwapRouter(uniswapRouter).exactInputSingle(params);
+
+        IERC20(weth).approve(uniswapRouter, amountWeth);
+        params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: weth,
+            tokenOut: usdc,
+            fee: 3000,
+            recipient: address(this),
+            deadline: block.timestamp,
+            amountIn: amountWeth,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
+
+        // Execute the swap
+        ISwapRouter(uniswapRouter).exactInputSingle(params);
+
+        amountUsdc = IERC20(usdc).balanceOf(address(this));
+        IERC20(usdc).transfer(msg.sender, amountUsdc);
     }
 }
