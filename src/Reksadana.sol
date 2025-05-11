@@ -26,7 +26,11 @@ interface IAggregatorV3 {
 contract Reksadana is ERC20 {
     // Errors
     error ZeroAmount();
-    error NotEnoughShares();
+    error InsufficientShares();
+
+    //  Events
+    event Deposit(address user, uint256 amount, uint256 shares);
+    event Withdraw(address user, uint256 shares, uint256 amount);
 
     address uniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
@@ -111,15 +115,15 @@ contract Reksadana is ERC20 {
         });
         // Execute the swap
         ISwapRouter(uniswapRouter).exactInputSingle(params);
-    }
 
+        emit Deposit(msg.sender, amount, shares);
+    }
 
     function withdraw(uint256 shares) public {
         if (shares == 0) revert ZeroAmount();
+        if (shares > balanceOf(msg.sender)) revert InsufficientShares();
 
         uint256 totalShares = totalSupply();
-
-        if (shares > totalShares) revert NotEnoughShares();
 
         uint256 PROPORTION_SCALED = 1e18;
         uint256 proportion = (shares * PROPORTION_SCALED) / totalShares;
@@ -163,5 +167,7 @@ contract Reksadana is ERC20 {
 
         amountUsdc = IERC20(usdc).balanceOf(address(this));
         IERC20(usdc).transfer(msg.sender, amountUsdc);
+
+        emit Withdraw(msg.sender, shares, amountUsdc);
     }
 }
