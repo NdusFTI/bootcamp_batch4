@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "lib/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 contract Swap {
     address uniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;

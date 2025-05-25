@@ -9,3 +9,5 @@
 	url = https://github.com/Uniswap/v3-periphery
 [submodule "lib/v3-core"]
 	path = lib/v3-core
+[submodule "lib/openzeppelin-contracts-upgradeable"]
+	path = lib/openzeppelin-contracts-upgradeable
